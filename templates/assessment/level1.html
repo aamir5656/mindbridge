@@ -1,0 +1,140 @@
+{% extends 'assessment/base.html' %}
+{% block title %}Level 1 — Screening{% endblock %}
+{% block content %}
+<div class="page">
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Level 1 — Initial Screening</span>
+      <span id="q-counter">1 of {{ total }}</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="pbar" style="width: calc(100% / {{ total }});"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="q-header">
+      <div class="level-tag">Level 1 of 2</div>
+      <h2>Initial Mental Health Screening</h2>
+      <p>Answer honestly — there are no right or wrong answers.</p>
+    </div>
+
+    <form method="POST" id="qform">
+      {% csrf_token %}
+
+      <!-- Hidden inputs to store all answers -->
+      {% for q in questions %}
+      <input type="hidden" name="{{ q.id }}" id="ans_{{ q.id }}" value="">
+      {% endfor %}
+
+      <!-- Question Slides -->
+      {% for q in questions %}
+      <div class="q-slide" id="slide_{{ forloop.counter }}"
+           style="display: {% if forloop.first %}block{% else %}none{% endif %};">
+        <div class="q-number">Question {{ forloop.counter }} of {{ total }}</div>
+        <div class="q-text">{{ q.text }}</div>
+        <div class="options" id="opts_{{ forloop.counter }}">
+          {% for opt in q.options %}
+          <div class="option-label"
+               onclick="selectOption({{ forloop.parentloop.counter }}, '{{ q.id }}', {{ opt.value }}, this)">
+            <div class="radio-dot" id="dot_{{ forloop.parentloop.counter }}_{{ forloop.counter }}"></div>
+            {{ opt.label }}
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Navigation -->
+        <div style="display:flex; gap:12px; margin-top:28px;">
+          {% if not forloop.first %}
+          <button type="button" class="btn-secondary"
+                  style="flex:1;" onclick="goTo({{ forloop.counter }} - 1)">
+            ← Back
+          </button>
+          {% endif %}
+
+          {% if forloop.last %}
+          <button type="button" class="btn-primary"
+                  id="next_{{ forloop.counter }}"
+                  style="flex:2; opacity:.4; cursor:not-allowed;"
+                  onclick="submitForm()" disabled>
+            Continue to Level 2 →
+          </button>
+          {% else %}
+          <button type="button" class="btn-primary"
+                  id="next_{{ forloop.counter }}"
+                  style="flex:2; opacity:.4; cursor:not-allowed;"
+                  onclick="goTo({{ forloop.counter }} + 1)" disabled>
+            Next Question →
+          </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+
+    </form>
+  </div>
+</div>
+
+<script>
+  const total   = {{ total }};
+  const answers = {};   // { qId: value }
+
+  function selectOption(slideNum, qId, value, el) {
+    // Deselect all in this slide
+    const opts = document.querySelectorAll('#opts_' + slideNum + ' .option-label');
+    opts.forEach(o => {
+      o.style.borderColor  = '';
+      o.style.background   = '';
+      o.style.color        = '';
+      o.querySelector('.radio-dot').style.background  = '';
+      o.querySelector('.radio-dot').style.boxShadow   = '';
+    });
+
+    // Select clicked
+    el.style.borderColor = 'var(--accent)';
+    el.style.background  = 'rgba(124,58,237,.12)';
+    el.style.color       = 'var(--text)';
+    el.querySelector('.radio-dot').style.background = 'var(--accent)';
+    el.querySelector('.radio-dot').style.boxShadow  = '0 0 0 3px rgba(167,139,250,.25)';
+
+    // Store answer
+    answers[qId] = value;
+    document.getElementById('ans_' + qId).value = value;
+
+    // Enable next button
+    const btn = document.getElementById('next_' + slideNum);
+    btn.disabled       = false;
+    btn.style.opacity  = '1';
+    btn.style.cursor   = 'pointer';
+
+    // Auto advance after 400ms
+    setTimeout(() => {
+      if (slideNum < total) goTo(slideNum + 1);
+    }, 400);
+  }
+
+  function goTo(num) {
+    // Hide all
+    document.querySelectorAll('.q-slide').forEach(s => s.style.display = 'none');
+    // Show target
+    document.getElementById('slide_' + num).style.display = 'block';
+    // Update progress
+    document.getElementById('pbar').style.width = (num / total * 100) + '%';
+    document.getElementById('q-counter').textContent = num + ' of ' + total;
+    // Scroll top
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function submitForm() {
+    // Check all answered
+    const allAnswered = Object.keys(answers).length === total;
+    if (!allAnswered) {
+      alert('Please answer all questions before continuing.');
+      return;
+    }
+    document.getElementById('qform').submit();
+  }
+</script>
+{% endblock %}

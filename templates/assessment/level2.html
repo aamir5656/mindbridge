@@ -1,0 +1,130 @@
+{% extends 'assessment/base.html' %}
+{% block title %}Level 2 — Deep Dive{% endblock %}
+{% block content %}
+<div class="page">
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Level 2 — {{ label }}</span>
+      <span id="q-counter">1 of {{ total }}</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="pbar" style="width: calc(50% + 50% / {{ total }});"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="path-banner">
+      <div class="path-icon">
+        {% if path == 'depression' %}🧩{% elif path == 'happy' %}✨{% else %}🔄{% endif %}
+      </div>
+      <div>
+        <div class="path-info-title">Level 2 — {{ label }}</div>
+        <div class="path-info-desc">Questions tailored to your Level 1 responses</div>
+      </div>
+    </div>
+
+    <form method="POST" id="qform">
+      {% csrf_token %}
+
+      {% for q in questions %}
+      <input type="hidden" name="{{ q.id }}" id="ans_{{ q.id }}" value="">
+      {% endfor %}
+
+      {% for q in questions %}
+      <div class="q-slide" id="slide_{{ forloop.counter }}"
+           style="display: {% if forloop.first %}block{% else %}none{% endif %};">
+        <div class="q-number">Question {{ forloop.counter }} of {{ total }}</div>
+        <div class="q-text">{{ q.text }}</div>
+        <div class="options" id="opts_{{ forloop.counter }}">
+          {% for opt in q.options %}
+          <div class="option-label"
+               onclick="selectOption({{ forloop.parentloop.counter }}, '{{ q.id }}', {{ opt.value }}, this)">
+            <div class="radio-dot"></div>
+            {{ opt.label }}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:28px;">
+          {% if not forloop.first %}
+          <button type="button" class="btn-secondary"
+                  style="flex:1;" onclick="goTo({{ forloop.counter }} - 1)">
+            ← Back
+          </button>
+          {% endif %}
+
+          {% if forloop.last %}
+          <button type="button" class="btn-primary"
+                  id="next_{{ forloop.counter }}"
+                  style="flex:2; opacity:.4; cursor:not-allowed;"
+                  onclick="submitForm()" disabled>
+            See My Results →
+          </button>
+          {% else %}
+          <button type="button" class="btn-primary"
+                  id="next_{{ forloop.counter }}"
+                  style="flex:2; opacity:.4; cursor:not-allowed;"
+                  onclick="goTo({{ forloop.counter }} + 1)" disabled>
+            Next Question →
+          </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+
+    </form>
+  </div>
+</div>
+
+<script>
+  const total   = {{ total }};
+  const answers = {};
+
+  function selectOption(slideNum, qId, value, el) {
+    const opts = document.querySelectorAll('#opts_' + slideNum + ' .option-label');
+    opts.forEach(o => {
+      o.style.borderColor = '';
+      o.style.background  = '';
+      o.style.color       = '';
+      o.querySelector('.radio-dot').style.background = '';
+      o.querySelector('.radio-dot').style.boxShadow  = '';
+    });
+
+    el.style.borderColor = 'var(--accent)';
+    el.style.background  = 'rgba(124,58,237,.12)';
+    el.style.color       = 'var(--text)';
+    el.querySelector('.radio-dot').style.background = 'var(--accent)';
+    el.querySelector('.radio-dot').style.boxShadow  = '0 0 0 3px rgba(167,139,250,.25)';
+
+    answers[qId] = value;
+    document.getElementById('ans_' + qId).value = value;
+
+    const btn = document.getElementById('next_' + slideNum);
+    btn.disabled      = false;
+    btn.style.opacity = '1';
+    btn.style.cursor  = 'pointer';
+
+    setTimeout(() => {
+      if (slideNum < total) goTo(slideNum + 1);
+    }, 400);
+  }
+
+  function goTo(num) {
+    document.querySelectorAll('.q-slide').forEach(s => s.style.display = 'none');
+    document.getElementById('slide_' + num).style.display = 'block';
+    const pct = 50 + (num / total * 50);
+    document.getElementById('pbar').style.width = pct + '%';
+    document.getElementById('q-counter').textContent = num + ' of ' + total;
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function submitForm() {
+    if (Object.keys(answers).length !== total) {
+      alert('Please answer all questions before continuing.');
+      return;
+    }
+    document.getElementById('qform').submit();
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'assessment/base.html' %}
+{% block title %}Your Results{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="card">
+    <div class="result-hero">
+      <div class="result-icon">{{ result.icon }}</div>
+      <div class="result-category" style="color:{{ result.color }};">{{ result.category }}</div>
+      <div class="result-desc">{{ result.desc }}</div>
+    </div>
+
+    <div class="score-section">
+      <div class="score-header">
+        <span class="score-label">Wellbeing Score</span>
+        <span class="score-value" style="color:{{ result.color }};">{{ result.pct }}%</span>
+      </div>
+      <div class="gauge-track">
+        <div class="gauge-fill" id="gauge" style="width:0%; background:{{ result.color }};"></div>
+      </div>
+      <div class="gauge-labels"><span>Critical</span><span>Excellent</span></div>
+    </div>
+
+    {% if advice.urgent %}
+    <div class="urgent-box">
+      <div class="urgent-icon">⚠️</div>
+      <div class="urgent-text">
+        <strong>Important:</strong> Your responses indicate a need for immediate professional support.
+        Please reach out to a mental health professional or helpline today.
+      </div>
+    </div>
+    {% endif %}
+
+    {% if advice.tips %}
+    <div class="advice-title">Personalized Recommendations</div>
+    {% for tip in advice.tips %}
+    <div class="tip-card">
+      <div class="tip-num" style="background:rgba(124,58,237,.2); color:{{ result.color }};">{{ forloop.counter }}</div>
+      <div class="tip-text">{{ tip }}</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="action-row">
+      <a href="/" class="btn-secondary">← Retake Assessment</a>
+      <button onclick="window.print()" class="btn-secondary">🖨 Print Results</button>
+    </div>
+
+    <p style="margin-top:24px; font-size:12px; color:var(--muted); text-align:center; line-height:1.6;">
+      This assessment is for awareness purposes only and does not constitute medical advice.
+      If you are in crisis, please contact a qualified mental health professional immediately.
+    </p>
+  </div>
+</div>
+<script>
+  setTimeout(() => {
+    document.getElementById('gauge').style.width = '{{ result.pct }}%';
+  }, 300);
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'assessment/base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div style="max-width:900px; margin:0 auto; padding:0 20px;">
+  <div class="hero">
+    <div class="hero-badge">Evidence-Based Assessment</div>
+    <h1>Understand Your<br><span>Mental Wellbeing</span></h1>
+    <p>A professional 2-level adaptive assessment that analyzes your responses to provide personalized mental health insights and recommendations.</p>
+    <div class="stats">
+      <div class="stat-item"><div class="stat-num">20</div><div class="stat-lbl">Questions</div></div>
+      <div class="stat-item"><div class="stat-num">2</div><div class="stat-lbl">Levels</div></div>
+      <div class="stat-item"><div class="stat-num">5</div><div class="stat-lbl">Categories</div></div>
+      <div class="stat-item"><div class="stat-num">100%</div><div class="stat-lbl">Confidential</div></div>
+    </div>
+  </div>
+  <div class="features">
+    <div class="feat-card"><div class="feat-icon">🧠</div><div class="feat-title">Adaptive Assessment</div><div class="feat-desc">Level 2 questions adapt based on your Level 1 responses</div></div>
+    <div class="feat-card"><div class="feat-icon">🎯</div><div class="feat-title">Precise Analysis</div><div class="feat-desc">Weighted scoring across both levels for accurate results</div></div>
+    <div class="feat-card"><div class="feat-icon">💡</div><div class="feat-title">Personalized Advice</div><div class="feat-desc">Professional recommendations tailored to your category</div></div>
+    <div class="feat-card"><div class="feat-icon">🔒</div><div class="feat-title">Private & Anonymous</div><div class="feat-desc">No data stored — completely confidential assessment</div></div>
+  </div>
+  <div class="cta-wrap" style="margin-bottom: 30px;">
+    <a href="/level1/">
+        <button class="btn-primary" style="max-width:340px;">
+            Begin Assessment →
+        </button>
+    </a>
+  </div>
+</div>
+{% endblock %}
